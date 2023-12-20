@@ -32,7 +32,7 @@ def plot_data(dataframes, offsets, h_lines, v_lines):
     return fig
 
 # Streamlit App
-st.title("Interactive Multi-Line Data Visualization with Line Controls")
+st.title("Interactive Multi-Line Data Visualization with Line and Offset Controls")
 
 # File Uploader for multiple files
 uploaded_files = st.file_uploader("Choose CSV files", type="csv", accept_multiple_files=True)
@@ -51,24 +51,27 @@ if uploaded_files:
         selected_columns = st.multiselect(f"Select columns to plot from {uploaded_file.name}", df.columns)
         dataframes[uploaded_file.name] = (df, selected_columns)
 
-        for col in selected_columns:
-            col1, col2 = st.columns(2)
-            with col1:
-                x_offset = st.slider(f"Set X Offset for {col} in {uploaded_file.name}", -100, 100, 0, key=f"x_{uploaded_file.name}_{col}")
-            with col2:
-                y_offset = st.slider(f"Set Y Offset for {col} in {uploaded_file.name}", -100, 100, 0, key=f"y_{uploaded_file.name}_{col}")
-            offsets[(uploaded_file.name, col)] = {'x': x_offset, 'y': y_offset}
-
-# Horizontal and Vertical Line Controls
+# Line Controls
 st.sidebar.title("Line Controls")
 with st.sidebar:
     st.subheader("Horizontal Lines")
     h_line_count = st.number_input("Number of horizontal lines", 0, 5, 0)
-    h_lines = [st.slider(f"Y position of line {i+1}", -1000.0, 1000.0, 0.0, key=f"h_line_{i}") for i in range(h_line_count)]
+    h_lines = [st.number_input(f"Y position of line {i+1}", value=0.0, key=f"h_line_{i}") for i in range(h_line_count)]
 
     st.subheader("Vertical Lines")
     v_line_count = st.number_input("Number of vertical lines", 0, 5, 0)
-    v_lines = [st.slider(f"X position of line {i+1}", -1000.0, 1000.0, 0.0, key=f"v_line_{i}") for i in range(v_line_count)]
+    v_lines = [st.number_input(f"X position of line {i+1}", value=0.0, key=f"v_line_{i}") for i in range(v_line_count)]
+
+# Offset Controls
+st.write("Offset Controls:")
+for uploaded_file in uploaded_files:
+    for col in dataframes[uploaded_file.name][1]:
+        col1, col2 = st.columns(2)
+        with col1:
+            x_offset = st.number_input(f"X Offset for {col} in {uploaded_file.name}", value=0, key=f"x_{uploaded_file.name}_{col}")
+        with col2:
+            y_offset = st.number_input(f"Y Offset for {col} in {uploaded_file.name}", value=0, key=f"y_{uploaded_file.name}_{col}")
+        offsets[(uploaded_file.name, col)] = {'x': x_offset, 'y': y_offset}
 
 # Plotting
 if st.button("Plot Data"):
@@ -85,4 +88,4 @@ if col2.button("Print Graph"):
     fig.show(renderer="browser")
 
 if col3.button("Reset Graph"):
-    st.experimental_rerun
+    st.experimental_rerun()
