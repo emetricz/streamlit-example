@@ -64,11 +64,11 @@ st.sidebar.title("Line Controls")
 with st.sidebar:
     st.subheader("Horizontal Lines")
     h_line_count = st.number_input("Number of horizontal lines", 0, 5, 0)
-    h_lines = [st.slider(f"Y position of line {i+1}", -100.0, 100.0, 0.0, key=f"h_line_{i}") for i in range(h_line_count)]
+    h_lines = [st.slider(f"Y position of line {i+1}", -1000.0, 1000.0, 0.0, key=f"h_line_{i}") for i in range(h_line_count)]
 
     st.subheader("Vertical Lines")
     v_line_count = st.number_input("Number of vertical lines", 0, 5, 0)
-    v_lines = [st.slider(f"X position of line {i+1}", -100.0, 100.0, 0.0, key=f"v_line_{i}") for i in range(v_line_count)]
+    v_lines = [st.slider(f"X position of line {i+1}", -1000.0, 1000.0, 0.0, key=f"v_line_{i}") for i in range(v_line_count)]
 
 # Plotting
 if st.button("Plot Data"):
