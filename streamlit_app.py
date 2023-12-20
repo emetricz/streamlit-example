@@ -10,7 +10,7 @@ def plot_data(dataframes, offsets):
         for col in selected_columns:
             x_offset = offsets.get((file_name, col), {}).get('x', 0)
             y_offset = offsets.get((file_name, col), {}).get('y', 0)
-            fig.add_trace(go.Scatter(x=df.index + x_offset, y=df[col] + y_offset, mode='lines', name=f"{file_name} - {col}"))
+            fig.add_trace(go.Scatter(x=df.index + x_offset, y=df[col] + y_offset, mode='lines+markers', name=f"{file_name} - {col}"))
 
     fig.update_layout(
         xaxis_title="X Axis",
@@ -26,13 +26,14 @@ def plot_data(dataframes, offsets):
     return fig
 
 # Streamlit App
-st.title("Interactive Multi-Line Data Visualization with Individual Offsets")
+st.title("Interactive Multi-Line Data Visualization with Markers and Differences")
 
 # File Uploader for multiple files
 uploaded_files = st.file_uploader("Choose CSV files", type="csv", accept_multiple_files=True)
 
 dataframes = {}
 offsets = {}
+differences = {}
 
 if uploaded_files:
     for uploaded_file in uploaded_files:
@@ -44,19 +45,32 @@ if uploaded_files:
         selected_columns = st.multiselect(f"Select columns to plot from {uploaded_file.name}", df.columns)
         dataframes[uploaded_file.name] = (df, selected_columns)
 
-        # Set offsets for each line
+        # Set offsets and select points for each line
         for col in selected_columns:
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
-                x_offset = st.slider(f"Set X Offset for {col} in {uploaded_file.name}", min_value=-100, max_value=100, value=0, key=f"x_{uploaded_file.name}_{col}")
+                x_offset = st.slider(f"X Offset for {col} in {uploaded_file.name}", min_value=-100, max_value=100, value=0, key=f"x_{uploaded_file.name}_{col}")
             with col2:
-                y_offset = st.slider(f"Set Y Offset for {col} in {uploaded_file.name}", min_value=-100, max_value=100, value=0, key=f"y_{uploaded_file.name}_{col}")
+                y_offset = st.slider(f"Y Offset for {col} in {uploaded_file.name}", min_value=-100, max_value=100, value=0, key=f"y_{uploaded_file.name}_{col}")
             
             offsets[(uploaded_file.name, col)] = {'x': x_offset, 'y': y_offset}
+
+            with col3:
+                point1 = st.number_input(f"Point 1 for {col} in {uploaded_file.name}", min_value=0, max_value=len(df)-1, key=f"p1_{uploaded_file.name}_{col}")
+                point2 = st.number_input(f"Point 2 for {col} in {uploaded_file.name}", min_value=0, max_value=len(df)-1, key=f"p2_{uploaded_file.name}_{col}")
+                if point1 != point2:
+                    diff_x = df.index[point2] - df.index[point1]
+                    diff_y = df[col][point2] - df[col][point1]
+                    differences[(uploaded_file.name, col)] = {'Point 1': point1, 'Point 2': point2, 'X Difference': diff_x, 'Y Difference': diff_y}
 
     if st.button("Plot Data"):
         fig = plot_data(dataframes, offsets)
         st.plotly_chart(fig, use_container_width=True)
+
+    # Display differences in a table
+    if differences:
+        st.write("Differences between selected points:")
+        st.table(pd.DataFrame.from_dict(differences, orient='index'))
 
     # Save, Print, Reset Buttons
     col1, col2, col3 = st.columns(3)
@@ -66,6 +80,3 @@ if uploaded_files:
 
     if col2.button("Print Graph"):
         fig.show(renderer="browser")
-
-    if col3.button("Reset Graph"):
-        st.experimental_rerun()
