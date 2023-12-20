@@ -93,10 +93,7 @@ if st.button("Plot Data"):
         st.write(f"Delta X between Vertical Lines: {v_deltas}")
 
 # Save, Print, Reset Buttons
-col1, col2 = st.columns(2)
-if col1.button("Save Graph"):
-    fig.write_html("plot.html")
-    st.success("Saved as plot.html")
+col1 = st.columns(1)
 
-if col2.button("Reset Graph"):
+if col1.button("Reset Graph"):
     st.experimental_rerun()
