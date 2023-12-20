@@ -44,8 +44,12 @@ if uploaded_files:
         selected_columns = st.multiselect(f"Select columns to plot from {uploaded_file.name}", df.columns)
         dataframes[uploaded_file.name] = (df, selected_columns)
 
-        # Set offsets for each line
-        for col in selected_columns:
+    # Plot Data Button
+    plot_button = st.button("Plot Data")
+
+    # Set offsets for each line
+    for uploaded_file in uploaded_files:
+        for col in dataframes[uploaded_file.name][1]:
             col1, col2 = st.columns(2)
             with col1:
                 x_offset = st.slider(f"Set X Offset for {col} in {uploaded_file.name}", min_value=-100, max_value=100, value=0, key=f"x_{uploaded_file.name}_{col}")
@@ -54,7 +58,7 @@ if uploaded_files:
             
             offsets[(uploaded_file.name, col)] = {'x': x_offset, 'y': y_offset}
 
-    if st.button("Plot Data"):
+    if plot_button:
         fig = plot_data(dataframes, offsets)
         st.plotly_chart(fig, use_container_width=True)
 
