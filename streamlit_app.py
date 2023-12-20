@@ -94,5 +94,6 @@ if st.button("Plot Data"):
 
 # Save, Print, Reset Buttons
 col1 = st.columns(1)
-col1.button("Reset Graph")
-st.experimental_rerun()
+if st.button("Reset Graph"):
+    st.experimental_rerun()
+
