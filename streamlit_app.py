@@ -1,40 +1,54 @@
-import altair as alt
-import numpy as np
-import pandas as pd
 import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
 
-"""
-# Welcome to Streamlit!
+def load_data(file):
+    return pd.read_csv(file)
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:.
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+def plot_data(data, x_origin, y_origin, columns):
+    fig = go.Figure()
+    
+    for col in columns:
+        fig.add_trace(go.Scatter(x=data.index - x_origin, y=data[col] - y_origin, mode='lines', name=col))
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+    fig.update_layout(
+        xaxis_title="X Axis",
+        yaxis_title="Y Axis",
+        margin=dict(l=0, r=0, t=0, b=0),
+        xaxis=dict(showgrid=True, zeroline=True, showticklabels=True),
+        yaxis=dict(showgrid=True, zeroline=True, showticklabels=True),
+        dragmode='pan'
+    )
 
-num_points = st.slider("Number of points in spiral", 1, 10000, 1100)
-num_turns = st.slider("Number of turns in spiral", 1, 300, 31)
+    fig.update_xaxes(rangeslider_visible=True)
+    fig.update_layout(hovermode='x')
+    return fig
 
-indices = np.linspace(0, 1, num_points)
-theta = 2 * np.pi * num_turns * indices
-radius = indices
+# Streamlit App
+st.title("Interactive Data Visualization")
 
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
+# File Uploader
+uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+if uploaded_file is not None:
+    data = load_data(uploaded_file)
+    columns = st.multiselect('Select columns to plot', data.columns)
 
-df = pd.DataFrame({
-    "x": x,
-    "y": y,
-    "idx": indices,
-    "rand": np.random.randn(num_points),
-})
+    # Axis Manipulation
+    x_origin = st.slider("Adjust X Origin", min_value=0, max_value=len(data), value=0)
+    y_origin = st.slider("Adjust Y Origin", min_value=int(data[columns].min().min()), max_value=int(data[columns].max().max()), value=0)
 
-st.altair_chart(alt.Chart(df, height=700, width=700)
-    .mark_point(filled=True)
-    .encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color=alt.Color("idx", legend=None, scale=alt.Scale()),
-        size=alt.Size("rand", legend=None, scale=alt.Scale(range=[1, 150])),
-    ))
+    # Plotting
+    fig = plot_data(data, x_origin, y_origin, columns)
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Save, Print, Reset Buttons
+    col1, col2, col3 = st.columns(3)
+    if col1.button("Save Graph"):
+        fig.write_image("plot.png")
+        st.success("Saved as plot.png")
+
+    if col2.button("Print Graph"):
+        fig.show(renderer="browser")
+
+    if col3.button("Reset Graph"):
+        st.experimental_rerun()
