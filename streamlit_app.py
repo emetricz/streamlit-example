@@ -59,8 +59,8 @@ if uploaded_files:
             offsets[(uploaded_file.name, col)] = {'x': x_offset, 'y': y_offset}
 
     if plot_button:
-        fig = plot_data(dataframes, offsets)
         st.plotly_chart(fig, use_container_width=True)
+        fig = plot_data(dataframes, offsets)
 
     # Save, Print, Reset Buttons
     col1, col2, col3 = st.columns(3)
